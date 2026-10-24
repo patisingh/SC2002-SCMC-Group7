@@ -1,10 +1,11 @@
+
 package restaurant.entity;
 
-/** A single dish. Salad, Burger and Pasta are three Dish objects, not three subclasses. */
 public class Dish extends MenuItem {
-    private final String name;
-    private final int priceCents;
-    private final int prepUnits;
+
+    private String name;
+    private int priceCents;
+    private int prepUnits;
 
     public Dish(String name, int priceCents, int prepUnits) {
         this.name = name;
@@ -12,7 +13,18 @@ public class Dish extends MenuItem {
         this.prepUnits = prepUnits;
     }
 
-    @Override public String getName() { return name; }
-    @Override public int getPriceCents() { return priceCents; }
-    @Override public int getPrepUnits() { return prepUnits; }
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public int getPriceCents() {
+        return priceCents;
+    }
+
+    @Override
+    public int getPrepUnits() {
+        return prepUnits;
+    }
 }
