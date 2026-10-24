@@ -1,4 +1,3 @@
-
 package restaurant.entity;
 
 import java.util.List;
