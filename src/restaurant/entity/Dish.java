@@ -2,11 +2,14 @@ package restaurant.entity;
 
 public class Dish extends MenuItem {
 
-    private String name;
-    private int priceCents;
-    private int prepUnits;
+    private final String name;
+    private final int priceCents;
+    private final int prepUnits;
 
     public Dish(String name, int priceCents, int prepUnits) {
+        if (priceCents < 0 || prepUnits < 1){
+            throw new IllegalArgumentException("Invalid dish: " + name);
+        }
         this.name = name;
         this.priceCents = priceCents;
         this.prepUnits = prepUnits;
