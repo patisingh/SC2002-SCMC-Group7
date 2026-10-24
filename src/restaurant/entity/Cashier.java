@@ -1,40 +1,27 @@
 package restaurant.entity;
 
-import java.util.List;
+import java.util.Comparator;
+import java.util.Optional;
 
 public class Cashier extends Staff {
 
-    public ActionResult collectPayment(Restaurant restaurant) {
-        if (!canAct()) {
-            return null;
-        }
+    private static final Comparator<Customer> OLDEST_FIRST =
+            Comparator.comparingInt(Customer::getReadyToPayTurn).thenComparingInt(Customer::getId);
 
-        List<Customer> customers = restaurant.getReadyToPayCustomers();
-
-        if (customers.isEmpty()) {
-            return null;
-        }
-
-        Customer customer = customers.get(0);
-        Order order = customer.getOrder();
-
-        order.markPaid();
-        customer.markPaid();
-
-        int table = restaurant.recordPayment(customer);
-        finishTask();
-
-        String message = "Cashier: " + customer.getLabel()
-                + " pays " + Money.format(order.getBillCents())
-                + " (satisfaction " + customer.getSatisfaction()
-                + " recorded). Table " + table + " is free.";
-
-        return ActionResult.ok(message);
+    public Cashier() {
+        super("Cashier");
     }
 
-    @Override
-    public String getRoleName() {
-        return "Cashier";
+    public ActionResult collectPayment(Restaurant restaurant) {
+        if (!canAct()) return alreadyActed();
+        Optional<Customer> next = restaurant.getReadyToPayCustomers().stream().min(OLDEST_FIRST);
+        if (next.isEmpty()) return ActionResult.fail("Nobody is ready to pay.");
+
+        Customer customer = next.get();
+        Table table = restaurant.checkOut(customer);
+        finishTask();
+        return ActionResult.ok("Cashier: " + customer.getLabel() + " pays "
+                + Money.format(customer.getOrder().getBillCents()) + " (satisfaction "
+                + customer.getSatisfaction() + " recorded). Table " + table.getNumber() + " is free.");
     }
 }
-
