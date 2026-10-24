@@ -1,20 +1,30 @@
 package restaurant.entity;
 
-/** The rule every staff member shares: one task per turn. */
 public abstract class Staff {
-    private boolean actedThisTurn = false;
+    private final String role;
+    private boolean busy;
 
-    public boolean canAct() {
-        return !actedThisTurn;
+    protected Staff(String role) {
+        this.role = role;
     }
 
-    public void startTurn() {
-        actedThisTurn = false;
+    public String getRole() {
+        return role;
+    }
+
+    public boolean canAct() {
+        return !busy;
+    }
+
+    void startTurn() {
+        busy = false;
     }
 
     protected void finishTask() {
-        actedThisTurn = true;
+        busy = true;
     }
 
-    public abstract String getRoleName();
+    protected ActionResult alreadyActed() {
+        return ActionResult.fail("The " + role + " has already done a task this turn.");
+    }
 }
