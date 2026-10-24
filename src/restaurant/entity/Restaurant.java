@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Predicate;
 
-/** Everything in the restaurant right now, plus the running totals used for the win check. */
 public class Restaurant {
     private final Menu menu;
     private final List<Table> tables = new ArrayList<>();
@@ -38,9 +37,6 @@ public class Restaurant {
         queue.add(c);
     }
 
-    // ---------- tables ----------
-
-    /** The lowest-numbered free table. */
     Optional<Table> findFreeTable() {
         return tables.stream().filter(Table::isFree).findFirst();
     }
@@ -59,7 +55,6 @@ public class Restaurant {
         return tables.stream().filter(t -> t.getCustomer() == c).findFirst();
     }
 
-    // ---------- who needs what ----------
 
     public List<Customer> getSeatedCustomers() {
         return tables.stream().filter(t -> !t.isFree()).map(Table::getCustomer).toList();
@@ -92,9 +87,6 @@ public class Restaurant {
                 .toList();
     }
 
-    // ---------- turn steps that affect several customers ----------
-
-    /** Step 4: anyone served on an earlier turn has finished eating. */
     public List<Customer> finishEating(int turn) {
         List<Customer> finished = new ArrayList<>();
         for (Customer c : getSeatedCustomers()) {
@@ -106,7 +98,6 @@ public class Restaurant {
         return finished;
     }
 
-    /** Step 5: everyone not served yet loses satisfaction; anyone who reaches 0 leaves. */
     public List<Customer> applyWaiting() {
         List<Customer> everyone = new ArrayList<>(queue);
         everyone.addAll(getSeatedCustomers());
