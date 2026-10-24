@@ -1,11 +1,10 @@
 package restaurant.entity;
 
-/** One table. Occupied from seating until its customer pays or leaves. */
 public class Table {
     private final int number;
     private Customer customer;
 
-    public Table(int number) {
+    Table(int number) {
         this.number = number;
     }
 
@@ -13,11 +12,11 @@ public class Table {
         return customer == null;
     }
 
-    public void seat(Customer c) {
+    void seat(Customer c) {
         customer = c;
     }
 
-    public void clear() {
+    void clear() {
         customer = null;
     }
 
