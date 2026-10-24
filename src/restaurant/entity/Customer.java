@@ -2,10 +2,6 @@ package restaurant.entity;
 
 import java.util.List;
 
-/**
- * What every customer has in common. A subclass only says what is different about it
- * (in Stage 1, just how fast it loses satisfaction).
- */
 public abstract class Customer {
     private static final int MAX_SATISFACTION = 100;
 
@@ -24,10 +20,6 @@ public abstract class Customer {
 
     public abstract String getTypeName();
 
-    /**
-     * Customer n picks menu item number (n mod menu size), so every run is the same.
-     * With Salad, Burger, Pasta: C1 Burger, C2 Pasta, C3 Salad, C4 Burger, C5 Pasta, C6 Salad.
-     */
     public MenuItem chooseItem(Menu menu) {
         List<MenuItem> items = menu.getItems();
         return items.get(id % items.size());
@@ -37,7 +29,6 @@ public abstract class Customer {
         return item.getPriceCents();
     }
 
-    /** In the queue, or at a table but not served yet. */
     public boolean isWaitingForFood() {
         return status == CustomerStatus.WAITING
                 || status == CustomerStatus.SEATED
@@ -50,8 +41,6 @@ public abstract class Customer {
         }
     }
 
-    // The visit can only move forward one step at a time, so for example nobody can
-    // eat before being served or pay before they are READY_TO_PAY.
 
     void sitDown() {
         moveTo(CustomerStatus.WAITING, CustomerStatus.SEATED);
