@@ -1,6 +1,8 @@
 package restaurant.boundary;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.Scanner;
 
 import restaurant.control.GameController;
@@ -9,236 +11,202 @@ import restaurant.entity.Money;
 import restaurant.entity.Order;
 import restaurant.entity.Restaurant;
 import restaurant.entity.Table;
-import restaurant.entity.CustomerStatus;
 
 public class GameCLI {
+    private static final int WIDTH = 62;   
+    private static final String HEAVY = "=".repeat(WIDTH);
+    private static final String TABLE_LINE = "  +-------+------------+----------------+------------------------+";
 
-    private Scanner scanner = new Scanner(System.in);
-    private boolean echo = Boolean.getBoolean("echo");
+    private final Scanner in = new Scanner(System.in);
+    private final boolean echo = Boolean.getBoolean("echo");  
 
     public void showWelcome(int maxTurns) {
-        System.out.println("========================================");
-        System.out.println("       RESTAURANT RUSH - STAGE 1");
-        System.out.println("========================================");
-        System.out.println("You are the restaurant manager.");
-        System.out.println("You control the Waiter and Chef.");
-        System.out.println("The Cashier works automatically.");
-
-        System.out.println("\nGame Rules:");
-        System.out.println("Turns: " + maxTurns);
-        System.out.println("Tables: 2");
-        System.out.println("Staff: 1 Waiter, 1 Chef, 1 Cashier");
-
-        System.out.println("\nWinning Conditions:");
-        System.out.println("Paid customers: " + GameController.TARGET_PAID);
-        System.out.println("Revenue: " + Money.format(GameController.TARGET_REVENUE_CENTS));
-        System.out.println("Average satisfaction: "
-                + GameController.TARGET_AVG_SATISFACTION);
+        System.out.println(HEAVY);
+        System.out.println(center("RESTAURANT RUSH  -  Stage 1"));
+        System.out.println(HEAVY);
+        System.out.println("  You are the manager. Each turn you tell the Waiter");
+        System.out.println("  and the Chef what to do. The Cashier works by itself.");
+        System.out.println();
+        System.out.println("  " + maxTurns + " turns | " + GameController.TABLES + " tables | 1 Waiter | 1 Chef | 1 Cashier");
+        System.out.println("  To win, by the end of turn " + maxTurns + " you need:");
+        System.out.println("    - at least " + GameController.TARGET_PAID + " paid customers");
+        System.out.println("    - revenue of at least " + Money.format(GameController.TARGET_REVENUE_CENTS));
+        System.out.println("    - average satisfaction of at least " + (int) GameController.TARGET_AVG_SATISFACTION);
+        System.out.println(HEAVY);
     }
 
     public void showTurnHeader(int turn, int maxTurns) {
-        System.out.println("\n========================================");
-        System.out.println("TURN " + turn + " / " + maxTurns);
-        System.out.println("========================================");
+        System.out.println();
+        System.out.println();
+        System.out.println(HEAVY);
+        System.out.println("  TURN " + turn + " of " + maxTurns);
+        System.out.println(HEAVY);
     }
 
-    public void showState(Restaurant restaurant) {
+    public void showState(Restaurant r) {
+        System.out.println("  Revenue " + Money.format(r.getRevenueCents())
+                + " | Paid " + r.paidCount()
+                + " | Avg satisfaction " + formatAverage(r.averageSatisfaction())
+                + " | Left " + r.getDepartures());
 
-        System.out.println("\nRestaurant Status:");
-        System.out.println("Revenue: " + Money.format(restaurant.getRevenueCents()));
-        System.out.println("Paid Customers: " + restaurant.paidCount());
-        System.out.println("Average Satisfaction: "
-                + formatAvg(restaurant.averageSatisfaction()));
-        System.out.println("Customers Left: " + restaurant.getDepartures());
-
-        System.out.println("\nWaiting Queue:");
-
-        if (restaurant.getQueue().isEmpty()) {
-            System.out.println("No customers waiting.");
-        } else {
-            for (Customer customer : restaurant.getQueue()) {
-                System.out.println(customer.getLabel()
-                        + " | Satisfaction: " + customer.getSatisfaction()
-                        + " | Status: " + customer.getStatus());
-            }
+        System.out.println();
+        System.out.println("  QUEUE (waiting for a table)");
+        if (r.getQueue().isEmpty()) {
+            System.out.println("    nobody");
+        }
+        for (Customer c : r.getQueue()) {
+            System.out.println("    " + pad(shortName(c), 12) + satisfactionBar(c.getSatisfaction()));
         }
 
-        System.out.println("\nTables:");
-
-        for (Table table : restaurant.getTables()) {
-
-            if (table.isFree()) {
-                System.out.println("Table " + table.getNumber() + ": Free");
-            } else {
-                Customer customer = table.getCustomer();
-
-                System.out.println("Table " + table.getNumber()
-                        + ": " + customer.getLabel());
-
-                System.out.println("  Satisfaction: " + customer.getSatisfaction());
-                System.out.println("  Status: " + describe(customer));
-            }
+        System.out.println();
+        System.out.println(TABLE_LINE);
+        System.out.println("  | TABLE | CUSTOMER   | SATISFACTION   | WHAT'S HAPPENING       |");
+        System.out.println(TABLE_LINE);
+        for (Table t : r.getTables()) {
+            Customer c = t.getCustomer();
+            String name = c == null ? "-" : shortName(c);
+            String bar = c == null ? "" : satisfactionBar(c.getSatisfaction());
+            String activity = c == null ? "Free" : describe(c);
+            System.out.println("  | " + pad(String.valueOf(t.getNumber()), 5) + " | " + pad(name, 10)
+                    + " | " + pad(bar, 14) + " | " + pad(activity, 22) + " |");
         }
+        System.out.println(TABLE_LINE);
     }
 
     public void showSection(String title) {
-        System.out.println("\n---------- " + title + " ----------");
+        System.out.println();
+        String text = "-- " + title + " ";
+        System.out.println("  " + text + "-".repeat(Math.max(3, WIDTH - 2 - text.length())));
     }
 
-    public void showTurnSummary(Restaurant restaurant, int turn, int maxTurns) {
-
-        System.out.println("\nTurn Summary:");
-        System.out.println("Served: " + restaurant.getServedCount());
-        System.out.println("Customers Left: " + restaurant.getDepartures());
-        System.out.println("Revenue: " + Money.format(restaurant.getRevenueCents()));
-        System.out.println("Average Satisfaction: "
-                + formatAvg(restaurant.averageSatisfaction()));
-        System.out.println("Turns Used: " + turn + "/" + maxTurns);
+    public void showTurnSummary(Restaurant r, int turn, int maxTurns) {
+        System.out.println();
+        System.out.println("  Served " + r.getServedCount()
+                + " | Left " + r.getDepartures()
+                + " | Revenue " + Money.format(r.getRevenueCents())
+                + " | Avg " + formatAverage(r.averageSatisfaction())
+                + " | Turn " + turn + "/" + maxTurns);
     }
 
-    public void showResult(Restaurant restaurant, boolean victory) {
-
-        System.out.println("\n========================================");
-
-        if (victory) {
-            System.out.println("VICTORY!");
-        } else {
-            System.out.println("DEFEAT!");
-        }
-
-        System.out.println("========================================");
-
-        int paid = restaurant.paidCount();
-        int revenue = restaurant.getRevenueCents();
-        Double average = restaurant.averageSatisfaction();
-
-        System.out.println("Paid Customers: " + paid
-                + " - " + mark(paid >= GameController.TARGET_PAID));
-
-        System.out.println("Revenue: " + Money.format(revenue)
-                + " - " + mark(revenue >= GameController.TARGET_REVENUE_CENTS));
-
-        boolean satisfactionMet = average != null
-                && average >= GameController.TARGET_AVG_SATISFACTION;
-
-        System.out.println("Average Satisfaction: " + formatAvg(average)
-                + " - " + mark(satisfactionMet));
-
-        System.out.println("Unhappy Departures: " + restaurant.getDepartures());
+    public void showResult(Restaurant r, boolean victory, boolean paidMet, boolean revenueMet, boolean satisfactionMet) {
+        System.out.println();
+        System.out.println();
+        System.out.println(HEAVY);
+        System.out.println(center(victory ? "*** VICTORY ***" : "*** DEFEAT ***"));
+        System.out.println(HEAVY);
+        System.out.println("  " + pad("Target", 25) + pad("You got", 12) + "Result");
+        System.out.println("  " + "-".repeat(47));
+        printTarget("Paid customers >= " + GameController.TARGET_PAID, String.valueOf(r.paidCount()), paidMet);
+        printTarget("Revenue >= " + Money.format(GameController.TARGET_REVENUE_CENTS),
+                Money.format(r.getRevenueCents()), revenueMet);
+        printTarget("Avg satisfaction >= " + (int) GameController.TARGET_AVG_SATISFACTION,
+                formatAverage(r.averageSatisfaction()), satisfactionMet);
+        System.out.println();
+        System.out.println("  Customers who left unhappy: " + r.getDepartures());
+        System.out.println(HEAVY);
     }
 
-    public void showMessage(String message) {
-        System.out.println("> " + message);
+    public void showMessage(String text) {
+        printWrapped("  > ", text);
     }
 
-    public void showError(String message) {
-        System.out.println("Error: " + message);
+    public void showError(String text) {
+        printWrapped("  ! ", text);
     }
 
     public int askChoice(String title, List<String> options, String zeroLabel) {
-
-        System.out.println("\n" + title);
-
+        System.out.println();
+        System.out.println("  " + title);
         for (int i = 0; i < options.size(); i++) {
-            System.out.println((i + 1) + ". " + options.get(i));
+            System.out.println("    " + (i + 1) + ") " + options.get(i));
         }
-
-        System.out.println("0. " + zeroLabel);
-
+        System.out.println("    0) " + zeroLabel);
         return readNumber(0, options.size());
     }
 
-    public int askPick(String title, List<String> options) {
-
-        System.out.println("\n" + title);
-
-        for (int i = 0; i < options.size(); i++) {
-            System.out.println((i + 1) + ". " + options.get(i));
+    public int askPick(String title, List<String> labels) {
+        System.out.println("  " + title);
+        for (int i = 0; i < labels.size(); i++) {
+            System.out.println("    " + (i + 1) + ") " + labels.get(i));
         }
-
-        int choice = readNumber(1, options.size());
-
-        return choice - 1;
+        return readNumber(1, labels.size()) - 1;
     }
 
     private int readNumber(int min, int max) {
-
         while (true) {
-
-            System.out.print("Enter choice: ");
-
-            if (!scanner.hasNextLine()) {
-                System.out.println("Input ended. Game stopped.");
+            System.out.print("  Your choice: ");
+            if (!in.hasNextLine()) {
+                System.out.println();
+                System.out.println("  [Input ended. Game stopped.]");
                 System.exit(0);
             }
-
-            String input = scanner.nextLine().trim();
-
-            if (echo) {
-                System.out.println(input);
-            }
-
+            String line = in.nextLine().trim();
+            if (echo) System.out.println(line);
             try {
-                int number = Integer.parseInt(input);
-
-                if (number >= min && number <= max) {
-                    return number;
-                } else {
-                    System.out.println("Please enter a number between "
-                            + min + " and " + max);
-                }
-
+                int n = Integer.parseInt(line);
+                if (n >= min && n <= max) return n;
+                showError("Please type a number from " + min + " to " + max + ".");
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number.");
+                showError("\"" + line + "\" is not a number. Please type a number from " + min + " to " + max + ".");
             }
         }
     }
 
-    private String describe(Customer customer) {
 
-        CustomerStatus status = customer.getStatus();
-        Order order = customer.getOrder();
+    private void printTarget(String target, String achieved, boolean met) {
+        System.out.println("  " + pad(target, 25) + pad(achieved, 12) + (met ? "MET" : "MISSED"));
+    }
 
-        if (status == CustomerStatus.SEATED) {
-            return "Waiting to order";
-        }
+    private String shortName(Customer c) {
+        return "C" + c.getId() + " " + c.getTypeName();
+    }
 
-        if (status == CustomerStatus.ORDERED) {
+    private String describe(Customer c) {
+        Order o = c.getOrder();
+        return switch (c.getStatus()) {
+            case SEATED -> "Waiting to order";
+            case ORDERED -> o.isReady()
+                    ? o.getItem().getName() + " READY to serve"
+                    : o.getItem().getName() + " cooking " + o.getProgress();
+            case EATING -> "Eating " + o.getItem().getName();
+            case READY_TO_PAY -> "Done, ready to pay";
+            default -> c.getStatus().toString();
+        };
+    }
 
-            if (order.isReady()) {
-                return order.getItem().getName() + " READY to serve";
-            } else {
-                return order.getItem().getName()
-                        + " cooking " + order.getProgress();
+    private String satisfactionBar(int satisfaction) {
+        int filled = (int) Math.round(satisfaction / 10.0);
+        return "#".repeat(filled) + "-".repeat(10 - filled) + String.format(" %3d", satisfaction);
+    }
+
+    private String formatAverage(OptionalDouble avg) {
+        return avg.isPresent() ? String.format("%.1f", avg.getAsDouble()) : "N/A";
+    }
+
+    private void printWrapped(String prefix, String text) {
+        int max = WIDTH - prefix.length();
+        String indent = " ".repeat(prefix.length());
+        List<String> lines = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        for (String word : text.split(" ")) {
+            if (current.length() > 0 && current.length() + 1 + word.length() > max) {
+                lines.add(current.toString());
+                current.setLength(0);
             }
+            if (current.length() > 0) current.append(' ');
+            current.append(word);
         }
-
-        if (status == CustomerStatus.EATING) {
-            return "Eating " + order.getItem().getName();
+        lines.add(current.toString());
+        for (int i = 0; i < lines.size(); i++) {
+            System.out.println((i == 0 ? prefix : indent) + lines.get(i));
         }
-
-        if (status == CustomerStatus.READY_TO_PAY) {
-            return "Ready to pay";
-        }
-
-        return status.toString();
     }
 
-    private String formatAvg(Double average) {
-
-        if (average == null) {
-            return "N/A";
-        }
-
-        return String.format("%.1f", average);
+    private String pad(String s, int width) {
+        return s.length() >= width ? s.substring(0, width) : s + " ".repeat(width - s.length());
     }
 
-    private String mark(boolean success) {
-
-        if (success) {
-            return "MET";
-        } else {
-            return "MISSED";
-        }
+    private String center(String s) {
+        return " ".repeat(Math.max(0, (WIDTH - s.length()) / 2)) + s;
     }
 }
