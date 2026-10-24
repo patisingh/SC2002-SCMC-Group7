@@ -1,10 +1,10 @@
 package restaurant.entity;
 
-public abstract class MenuItem {
+public interface class MenuItem {
 
-    public abstract String getName();
+    String getName();
 
-    public abstract int getPriceCents();
+    int getPriceCents();
 
-    public abstract int getPrepUnits();
+    int getPrepUnits();
 }
