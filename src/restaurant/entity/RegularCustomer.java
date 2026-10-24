@@ -1,9 +1,9 @@
 package restaurant.entity;
 
-/** A normal customer: loses 8 satisfaction per waiting turn and pays full price. */
 public class RegularCustomer extends Customer {
-    public RegularCustomer(int id, int arrivalTurn) {
-        super(id, arrivalTurn);
+
+    public RegularCustomer(int id) {
+        super(id);
     }
 
     @Override
