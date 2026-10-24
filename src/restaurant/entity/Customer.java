@@ -2,110 +2,109 @@ package restaurant.entity;
 
 import java.util.List;
 
+/**
+ * What every customer has in common. A subclass only says what is different about it
+ * (in Stage 1, just how fast it loses satisfaction).
+ */
 public abstract class Customer {
-
-    public static final int MAX_SATISFACTION = 100;
+    private static final int MAX_SATISFACTION = 100;
 
     private final int id;
-    private final int arrivalTurn;
-    private int satisfaction = 100;
+    private int satisfaction = MAX_SATISFACTION;
     private CustomerStatus status = CustomerStatus.WAITING;
     private Order order;
     private int readyToPayTurn = -1;
 
-    protected Customer(int id, int arrivalTurn) {
+    protected Customer(int id) {
         this.id = id;
-        this.arrivalTurn = arrivalTurn;
     }
 
+    /** Satisfaction lost for every turn spent waiting. */
     protected abstract int waitingPenalty();
 
     public abstract String getTypeName();
 
+    /**
+     * Customer n picks menu item number (n mod menu size), so every run is the same.
+     * With Salad, Burger, Pasta: C1 Burger, C2 Pasta, C3 Salad, C4 Burger, C5 Pasta, C6 Salad.
+     */
     public MenuItem chooseItem(Menu menu) {
         List<MenuItem> items = menu.getItems();
-        int index = id % items.size();
-        return items.get(index);
+        return items.get(id % items.size());
     }
 
     public int billFor(MenuItem item) {
         return item.getPriceCents();
     }
 
+    /** In the queue, or at a table but not served yet. */
     public boolean isWaitingForFood() {
         return status == CustomerStatus.WAITING
                 || status == CustomerStatus.SEATED
                 || status == CustomerStatus.ORDERED;
     }
 
-    public void loseWaitingSatisfaction() {
+    void loseWaitingSatisfaction() {
         if (isWaitingForFood()) {
-            satisfaction -= waitingPenalty();
-
-            if (satisfaction < 0) {
-                satisfaction = 0;
-            }
+            satisfaction = Math.max(0, satisfaction - waitingPenalty());
         }
     }
 
-    public void markSeated() {
-        status = CustomerStatus.SEATED;
+    // The visit can only move forward one step at a time, so for example nobody can
+    // eat before being served or pay before they are READY_TO_PAY.
+
+    void sitDown() {
+        moveTo(CustomerStatus.WAITING, CustomerStatus.SEATED);
     }
 
-    public void placeOrder(Order newOrder) {
+    void placeOrder(Order newOrder) {
+        moveTo(CustomerStatus.SEATED, CustomerStatus.ORDERED);
         order = newOrder;
-        status = CustomerStatus.ORDERED;
     }
 
-    public void startEating() {
-        status = CustomerStatus.EATING;
+    void receiveFood(int turn) {
+        moveTo(CustomerStatus.ORDERED, CustomerStatus.EATING);
+        order.markServed(turn);
     }
 
-    public void finishEating(int turn) {
-        status = CustomerStatus.READY_TO_PAY;
+    void finishEating(int turn) {
+        moveTo(CustomerStatus.EATING, CustomerStatus.READY_TO_PAY);
         readyToPayTurn = turn;
     }
 
-    public void markPaid() {
-        status = CustomerStatus.PAID;
+    void pay() {
+        moveTo(CustomerStatus.READY_TO_PAY, CustomerStatus.PAID);
+        order.markPaid();
     }
 
-    public void leave() {
-        status = CustomerStatus.LEFT;
-
-        if (order != null) {
-            if (order.getStatus() != OrderStatus.SERVED
-                    && order.getStatus() != OrderStatus.PAID) {
-                order.cancel();
-            }
+    void leave() {
+        if (!isWaitingForFood()) {
+            throw new IllegalStateException(getLabel() + " has already been served");
         }
+        status = CustomerStatus.LEFT;
+        if (order != null) {
+            order.cancel();
+        }
+    }
+
+    private void moveTo(CustomerStatus expected, CustomerStatus next) {
+        if (status != expected) {
+            throw new IllegalStateException(getLabel() + " is " + status + ", expected " + expected);
+        }
+        status = next;
     }
 
     public String getLabel() {
         return "C" + id + " (" + getTypeName() + ")";
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
 
-    public int getArrivalTurn() {
-        return arrivalTurn;
-    }
+    public int getSatisfaction() { return satisfaction; }
 
-    public int getSatisfaction() {
-        return satisfaction;
-    }
+    public CustomerStatus getStatus() { return status; }
 
-    public CustomerStatus getStatus() {
-        return status;
-    }
+    public Order getOrder() { return order; }
 
-    public Order getOrder() {
-        return order;
-    }
-
-    public int getReadyToPayTurn() {
-        return readyToPayTurn;
-    }
+    int getReadyToPayTurn() { return readyToPayTurn; }
 }
