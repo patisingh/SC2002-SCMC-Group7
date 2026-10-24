@@ -3,9 +3,10 @@ package restaurant;
 import restaurant.boundary.GameCLI;
 import restaurant.control.GameController;
 
-/** Starting point. Run this file. */
 public class Main {
     public static void main(String[] args) {
-        new GameController(new GameCLI()).play();
+        GameCLI cli = new GameCLI();
+        GameController game = new GameController(cli);
+        game.play();
     }
 }
