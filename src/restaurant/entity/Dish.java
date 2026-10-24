@@ -1,4 +1,3 @@
-
 package restaurant.entity;
 
 public class Dish extends MenuItem {
