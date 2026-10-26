@@ -1,6 +1,6 @@
 package restaurant.entity;
 
-public interface class MenuItem {
+public interface MenuItem {
 
     String getName();
 
