@@ -1,6 +1,6 @@
 package restaurant.entity;
 
-public class Dish extends MenuItem {
+public class Dish implements MenuItem {
 
     private final String name;
     private final int priceCents;
