@@ -1,6 +1,5 @@
 package restaurant.entity;
 
-/** Once-per-game pricing policy. The controller advances it once at turn end. */
 public class HappyHour {
     private boolean used;
     private int remainingTurns;

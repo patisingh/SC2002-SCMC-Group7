@@ -2,7 +2,6 @@ package restaurant.entity;
 
 import java.util.Optional;
 
-/** Shared seating rules; Host and Waiter each retain their own task allowance. */
 public abstract class SeatingStaff extends Staff {
     protected SeatingStaff(String role) {
         super(role);

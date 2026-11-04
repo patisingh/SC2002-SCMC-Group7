@@ -17,8 +17,8 @@ public class Waiter extends SeatingStaff {
             return ActionResult.fail(customer.getLabel() + " is not waiting to order.");
         }
 
-        MenuItem item = customer.chooseItem(menu);                        // the customer decides, not the manager
-        Order order = new Order(customer, item, pricing.billFor(customer, item));   // price is locked in here
+        MenuItem item = customer.chooseItem(menu);
+        Order order = new Order(customer, item, pricing.billFor(customer, item));
         customer.placeOrder(order);
         finishTask();
         int units = item.getPrepUnits();

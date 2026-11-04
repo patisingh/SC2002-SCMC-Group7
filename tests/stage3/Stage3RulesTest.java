@@ -1,6 +1,5 @@
 package restaurant.entity;
 
-/** Offline rule checks; throws on failure without requiring JUnit. */
 public class Stage3RulesTest {
     private static void check(boolean condition, String message) {
         if (!condition) throw new AssertionError(message);
@@ -50,7 +49,6 @@ public class Stage3RulesTest {
         check(vip.getOrder().getBillCents() == 1296, "Discount persists after expiry");
         check(r.getHappyHour().billFor(vip, menu.getItems().get(1)) == 1350, "New bills after expiry");
 
-        // Recovery excludes eating, ready-to-pay, paid and departed customers.
         r.startTurn();
         r.getChef().prepare(vip.getOrder());
         r.applyWaiting();

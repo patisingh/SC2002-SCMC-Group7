@@ -2,7 +2,6 @@ package restaurant.entity;
 
 import java.util.Objects;
 
-/** Two existing items, with combined preparation and a 10% bundle discount. */
 public class ComboMeal implements MenuItem {
     private final MenuItem first;
     private final MenuItem second;

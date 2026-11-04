@@ -63,9 +63,8 @@ See `docs/test-notes.md` for the replay plan and expected results.
 ## Stage snapshots
 
 The working code is Stage 3 (`stage-3`). Stage 2 remains runnable at `stage-2`,
-and Stage 1 at the existing case-sensitive `Stage-1` tag. The assignment requests
-lowercase `stage-1`; the group still needs to confirm the Stage 1 snapshot and add
-that alias before submission. Existing tags are preserved.
+and Stage 1 at `stage-1`. The original `Stage-1` tag is also kept; both names
+point to the same Stage 1 snapshot.
 
 ## Stage 3 features and choices
 
