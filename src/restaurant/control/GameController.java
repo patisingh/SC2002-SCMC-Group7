@@ -9,6 +9,7 @@ import restaurant.entity.ActionResult;
 import restaurant.entity.Chef;
 import restaurant.entity.Customer;
 import restaurant.entity.Menu;
+import restaurant.entity.Host;
 import restaurant.entity.Order;
 import restaurant.entity.Restaurant;
 import restaurant.entity.Staff;
@@ -22,7 +23,7 @@ public class GameController {
     public static final double TARGET_AVG_SATISFACTION = 60.0;
 
     private final GameCLI cli;
-    private final Restaurant restaurant = new Restaurant(Menu.standard(), TABLES);
+    private final Restaurant restaurant = new Restaurant(Menu.stageThree(), TABLES);
     private final ArrivalSchedule schedule = new ArrivalSchedule();
     private int turn;
 
@@ -44,10 +45,13 @@ public class GameController {
     private void runTurn() {
         restaurant.startTurn();
         cli.showTurnHeader(turn, MAX_TURNS);
-        processArrivals();             
+        processArrivals();
+        askHappyHour();
+        restaurant.applyHappyHourRecovery();
         cli.showState(restaurant);
 
         cli.showSection("Your decisions");
+        askHost();
         askWaiter();                   
         askChef();
 
@@ -55,6 +59,7 @@ public class GameController {
         processEatingAndPayment();     
         applyWaiting();               
         cli.showTurnSummary(restaurant, turn, MAX_TURNS);
+        restaurant.getHappyHour().endTurn();
     }
 
     private void processArrivals() {
@@ -65,6 +70,26 @@ public class GameController {
         }
     }
 
+
+    private void askHappyHour() {
+        if (restaurant.getHappyHour().canActivate()
+                && cli.askChoice("HAPPY HOUR - start-of-turn policy:",
+                        List.of("Activate for this turn and the next"), "Keep for later") == 1) {
+            cli.showMessage(restaurant.getHappyHour().activate().message());
+        }
+    }
+
+    private void askHost() {
+        Host host = restaurant.getHost();
+        while (true) {
+            if (cli.askChoice("HOST - choose one task:", List.of("Seat a queued customer"), "Wait") == 0) {
+                cli.showMessage("The Host waits this turn.");
+                return;
+            }
+            if (report(host.seat(restaurant,
+                    pick("Seat which customer?", restaurant.getQueue(), this::customerLine)), host)) return;
+        }
+    }
 
     private void askWaiter() {
         Waiter waiter = restaurant.getWaiter();
@@ -86,7 +111,7 @@ public class GameController {
             }
             ActionResult result = switch (choice) {
                 case 1 -> waiter.seat(restaurant, pick("Seat which customer?", queue, this::customerLine));
-                case 2 -> waiter.takeOrder(pick("Take whose order?", toOrder, this::customerLine), restaurant.getMenu());
+                case 2 -> waiter.takeOrder(pick("Take whose order?", toOrder, this::customerLine), restaurant.getMenu(), restaurant.getHappyHour());
                 case 3 -> waiter.serve(restaurant, pick("Serve which order?", ready, this::orderLine), turn);
                 default -> throw new IllegalStateException("Unexpected choice " + choice);
             };

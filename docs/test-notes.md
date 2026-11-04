@@ -60,3 +60,26 @@ C5 is served but has not paid by turn 18, so is excluded from revenue and the av
 Before the extension, the uploaded Stage 1 source also compiled and its original
 victory ($57.00, 4 paid, 78.0 average) and defeat replays matched their expected results.
 The Stage 1 input files are preserved byte-for-byte. They are not Stage 2 test cases.
+
+## Stage 3
+
+Run `python3 tests/stage3/verify.py` from the repository root. It compiles with
+`--release 17`, runs domain checks, and verifies complete 18-turn CLI replays.
+No network or third-party dependencies are used.
+
+| ID | File | Expected and verified result |
+|---|---|---|
+| TC-07 | `tests/stage3/tc07_stage3_victory.txt` | 18 turns, 6 served, 5 paid, $86.16, average 87.8, no departures, VICTORY |
+| TC-08 | `tests/stage3/tc08_stage3_defeat.txt` | All staff wait and no Happy Hour; 18 turns, 0 paid, $0.00, N/A, 2 departures, DEFEAT |
+| TC-09 | `tests/stage3/tc09_stage3_invalid_input.txt` | Invalid text and out-of-range Happy Hour choices, then unavailable serve; retries preserve tasks and produce TC-07's result |
+| Rules | `tests/stage3/Stage3RulesTest.java` | Combo prep/rounding, deterministic selection, Host allowance and independent Waiter seating, queue validation, recovery cap/exclusions, VIP then Happy Hour pricing, two-turn expiry, one activation, locked bills and collected revenue |
+
+TC-07 uses Host seating on arrival turns and Happy Hour on turn 4. Waiter takes
+each order on its arrival turn; Chef cooks immediately and again next turn for
+Pasta/Combo; Waiter serves as soon as ready. Payments: C1 turn 4 ($15, 92),
+C2 turn 8 ($12.96, 95), C3 turn 11 ($21.60, 84), C4 turn 14 ($21.60, 76),
+C5 turn 16 ($15, 92). C6 is served on turn 18 without paying. Total $86.16;
+(92 + 95 + 84 + 76 + 92) / 5 = 87.8. Happy Hour is active on turns 4 and 5,
+expires before turn 6, and C2's discounted bill remains locked until turn 8.
+
+Prior-stage replay files are preserved and must be run at their corresponding tags.

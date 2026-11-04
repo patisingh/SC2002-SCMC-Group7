@@ -11,6 +11,8 @@ public class Restaurant {
     private final Menu menu;
     private final List<Table> tables = new ArrayList<>();
     private final List<Customer> queue = new ArrayList<>();
+    private final Host host = new Host();
+    private final HappyHour happyHour = new HappyHour();
     private final Waiter waiter = new Waiter();
     private final Chef chef = new Chef();
     private final Cashier cashier = new Cashier();
@@ -28,10 +30,21 @@ public class Restaurant {
     }
 
     public void startTurn() {
+        host.startTurn();
         waiter.startTurn();
         chef.startTurn();
         cashier.startTurn();
     }
+
+    public void applyHappyHourRecovery() {
+        if (!happyHour.isActive()) return;
+        for (Customer customer : queue) customer.recoverWaitingSatisfaction(15);
+        for (Customer customer : getSeatedCustomers()) customer.recoverWaitingSatisfaction(15);
+    }
+
+    public HappyHour getHappyHour() { return happyHour; }
+
+    public Host getHost() { return host; }
 
     public void addToQueue(Customer c) {
         queue.add(c);

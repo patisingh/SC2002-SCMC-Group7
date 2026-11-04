@@ -16,6 +16,12 @@ public class Menu {
         return Collections.unmodifiableList(items);
     }
 
+    public static Menu stageThree() {
+        Menu menu = standard();
+        menu.add(new ComboMeal(menu.items.get(0), menu.items.get(1)));
+        return menu;
+    }
+
     public static Menu standard() {
         Menu menu = new Menu();
 

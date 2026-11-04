@@ -1,30 +1,16 @@
 package restaurant.entity;
 
-import java.util.Optional;
-
-public class Waiter extends Staff {
+public class Waiter extends SeatingStaff {
 
     public Waiter() {
         super("Waiter");
     }
 
-    public ActionResult seat(Restaurant restaurant, Customer customer) {
-        if (!canAct()) return alreadyActed();
-        if (customer == null) return ActionResult.fail("Nobody is waiting in the queue.");
-        if (customer.getStatus() != CustomerStatus.WAITING) {
-            return ActionResult.fail(customer.getLabel() + " is not waiting in the queue.");
-        }
-        Optional<Table> table = restaurant.findFreeTable();
-        if (table.isEmpty()) {
-            return ActionResult.fail("All tables are taken. A table frees up when its customer pays or leaves.");
-        }
-
-        restaurant.seat(customer, table.get());
-        finishTask();
-        return ActionResult.ok("Waiter seats " + customer.getLabel() + " at Table " + table.get().getNumber() + ".");
+    public ActionResult takeOrder(Customer customer, Menu menu) {
+        return takeOrder(customer, menu, new HappyHour());
     }
 
-    public ActionResult takeOrder(Customer customer, Menu menu) {
+    public ActionResult takeOrder(Customer customer, Menu menu, HappyHour pricing) {
         if (!canAct()) return alreadyActed();
         if (customer == null) return ActionResult.fail("No seated customer is waiting to order.");
         if (customer.getStatus() != CustomerStatus.SEATED) {
@@ -32,7 +18,7 @@ public class Waiter extends Staff {
         }
 
         MenuItem item = customer.chooseItem(menu);                        // the customer decides, not the manager
-        Order order = new Order(customer, item, customer.billFor(item));   // price is locked in here
+        Order order = new Order(customer, item, pricing.billFor(customer, item));   // price is locked in here
         customer.placeOrder(order);
         finishTask();
         int units = item.getPrepUnits();

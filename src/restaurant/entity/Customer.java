@@ -35,6 +35,12 @@ public abstract class Customer {
                 || status == CustomerStatus.ORDERED;
     }
 
+    void recoverWaitingSatisfaction(int amount) {
+        if (isWaitingForFood()) {
+            satisfaction = Math.min(MAX_SATISFACTION, satisfaction + amount);
+        }
+    }
+
     void loseWaitingSatisfaction() {
         if (isWaitingForFood()) {
             satisfaction = Math.max(0, satisfaction - waitingPenalty());

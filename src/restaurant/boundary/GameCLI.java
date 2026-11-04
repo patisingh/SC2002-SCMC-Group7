@@ -21,16 +21,20 @@ public class GameCLI {
 
     public void showWelcome(int maxTurns) {
         System.out.println(HEAVY);
-        System.out.println(center("RESTAURANT RUSH  -  Stage 2"));
+        System.out.println(center("RESTAURANT RUSH  -  Stage 3"));
         System.out.println(HEAVY);
         System.out.println("  You are the manager. Each turn you tell the Waiter");
-        System.out.println("  and the Chef what to do. The Cashier works by itself.");
+        System.out.println("  Host and the Chef what to do. The Cashier works by itself.");
         System.out.println();
-        System.out.println("  " + maxTurns + " turns | " + GameController.TABLES + " tables | 1 Waiter | 1 Chef | 1 Cashier");
+        System.out.println("  " + maxTurns + " turns | " + GameController.TABLES + " tables | 1 Host | 1 Waiter | 1 Chef | 1 Cashier");
         System.out.println("  Regular: loses 8 satisfaction per waiting turn.");
         System.out.println("  VIP: loses 5 per waiting turn and gets 10% off.");
         System.out.println("  Critic: loses 12 per waiting turn, pays full price,");
         System.out.println("  and orders the most expensive menu item.");
+        System.out.println("  Host seats before the Waiter; each gets one task.");
+        System.out.println("  Salad + Burger Combo: $21.60, 2 prep units.");
+        System.out.println("  Happy Hour: activate once for 2 turns; waiting customers");
+        System.out.println("  recover 15 at turn start; new orders get 20% off after VIP.");
         System.out.println("  To win, by the end of turn " + maxTurns + " you need:");
         System.out.println("    - at least " + GameController.TARGET_PAID + " paid customers");
         System.out.println("    - revenue of at least " + Money.format(GameController.TARGET_REVENUE_CENTS));
@@ -47,6 +51,9 @@ public class GameCLI {
     }
 
     public void showState(Restaurant r) {
+        System.out.println("  Happy Hour: " + (r.getHappyHour().isActive()
+                ? r.getHappyHour().getRemainingTurns() + " turn(s) remaining (including this turn)"
+                : r.getHappyHour().canActivate() ? "available" : "used / expired"));
         System.out.println("  Revenue " + Money.format(r.getRevenueCents())
                 + " | Paid " + r.paidCount()
                 + " | Avg satisfaction " + formatAverage(r.averageSatisfaction())
