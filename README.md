@@ -137,11 +137,9 @@ Our own rule choices are listed in `docs/decisions.md`.
 ## Video timestamps
 
 | # | Segment | Time |
-|---|---|---|
-| 1 | Launching the game | 00:00 |
-| 2 | Manager choices, incl. a constrained decision | |
-| 3 | A dish going READY, SERVED, then paid | |
-| 4 | A VIP or Critic behaviour | |
-| 5 | A Stage 3 feature | |
-| 6 | One victory and one defeat | |
-| 7 | Stage tag comparisons and the diagrams | |
+|---|---------|------|
+| 1 | Game overview and the three stages | 00:00 |
+| 2 | Gameplay demonstration and key outcomes | 02:00 |
+| 3 | Class diagrams and evidence of stage changes | 06:00 |
+| 4 | Selected use case and sequence diagram | 10:00 |
+| 5 | Individual contributions and key learning | 13:00 |
