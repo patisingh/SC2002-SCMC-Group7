@@ -2,7 +2,7 @@
 
 | Decision | Our choice | Why | Where in the code |
 |---|---|---|---|
-| How Regular and VIP customers choose food | Customer number n picks menu item (n mod menu size). With Salad, Burger, Pasta: C1 Burger, C2 Pasta, C3 Salad, C4 Burger, C5 Pasta, C6 Salad | Deterministic, so every run can be reproduced; still gives a mix of dishes | `Customer.chooseItem()` |
+| How Regular and VIP customers choose food | Customer number n picks menu item (n mod menu size). Stages 1–2 (Salad, Burger, Pasta): C1 Burger, C2 Pasta, C3 Salad, C4 Burger, C5 Pasta, C6 Salad. Stage 3 adds the combo (Salad, Burger, Pasta, Combo): C1 Burger, C2 Pasta, C3 Combo, C5 Burger, C6 Pasta; C4 is the Critic and picks the most expensive item, the Combo | Deterministic, so every run can be reproduced; still gives a mix of dishes | `Customer.chooseItem()`, `CriticCustomer.chooseItem()` |
 | Which table a customer gets | The lowest-numbered free table | Simple and predictable | `Restaurant.findFreeTable()` |
 | When the Chef is asked | Only when there is something to cook | No pointless questions | `GameController.askChef()` |
 | Order of the eating and payment step | The Cashier collects before eaters become READY_TO_PAY | Gives "pays next turn at the earliest" with no extra code | `GameController.processEatingAndPayment()` |
