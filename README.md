@@ -1,140 +1,71 @@
-# Restaurant Rush (Stage 3)
+# Restaurant Rush
 
-Regular, VIP and Critic customers, the menu, Host, Waiter, Chef, Cashier, the full turn sequence, victory and defeat.
-
-C2 (turn 4) is a VIP: loses 5 satisfaction per waiting turn and receives 10% off.
-C4 (turn 10) is a Critic: loses 12 per waiting turn, pays full price and chooses the most expensive item.
-All other arrivals remain Regulars (loss of 8). There are still six arrivals and two tables.
-
-A turn-based restaurant game for the command line. You are the manager: each turn you choose what the staff
-do. Customers arrive by themselves, choose their own food, and pay automatically. Win by the end of turn 18
-with at least 4 paid customers, revenue of at least $45, and average satisfaction of at least 60.
-
+SC2002 Group 7: Hari, Sachin, Abhi, Dylan, Yukesh
 Repository: https://github.com/patisingh/SC2002-SCMC-Group7
+
+A turn-based restaurant game for the command line. You are the manager and choose what the staff do each
+turn. Win by the end of turn 18 with at least 4 paid customers, $45 revenue and average satisfaction of 60.
 
 ## How to run
 
-**Eclipse:** File > New > Java Project, untick "Use default location", browse to this folder, untick
-"Create module-info.java" if asked, Finish. Then right-click `src/restaurant/Main.java` > Run As > Java Application,
-click inside the Console and type numbers.
-
-**VS Code:** open this folder (with the Extension Pack for Java installed), open `src/restaurant/Main.java`, click Run.
-
-**Terminal:**
+Java 17 or newer. In Eclipse, run `src/restaurant/Main.java` as a Java Application. From a terminal:
 
     javac -d out $(find src -name "*.java")
     java -cp out restaurant.Main
 
-Windows (PowerShell / VS Code terminal, from the folder containing `src`):
-
-```powershell
-$javaFiles = Get-ChildItem .\src -Recurse -Filter *.java | Select-Object -ExpandProperty FullName
-javac --release 17 -d out $javaFiles
-java -cp out restaurant.Main
-```
-
-Windows (Command Prompt):
-
-    dir /s /b src\*.java > sources.txt
-    javac -d out @sources.txt
-    java -cp out restaurant.Main
-
-No libraries and no network needed. Java 17 or newer.
-
-## Replaying a test run
-
-Each test file is the list of numbers a player types, one per line.
+Replay a test run (the same inputs always give the same result):
 
     java -Decho=true -cp out restaurant.Main < tests/stage3/tc07_stage3_victory.txt
 
-In PowerShell, use `cmd /c` for file redirection:
-
-```powershell
-cmd /c "java -Decho=true -cp out restaurant.Main < tests\stage3\tc07_stage3_victory.txt"
-```
-
-In Eclipse: Run > Run Configurations > Main > Arguments tab, VM arguments `-Decho=true`;
-Common tab, tick Input File and choose the test file.
-
-Stage 1 and Stage 2 inputs remain unchanged for their preserved tags. Use Stage 3
-inputs on this version: Host and Happy Hour add prompts and combos change cooking.
-See `docs/test-notes.md` for the replay plan and expected results.
+Each stage's test files replay at that stage's tag. Expected results are in `docs/test-notes.md`, and our
+rule choices are in `docs/decisions.md`.
 
 ## Stage snapshots
 
-The working code is Stage 3 (`stage-3`). Stage 2 remains runnable at `stage-2`,
-and Stage 1 at `stage-1`. The original `Stage-1` tag is also kept; both names
-point to the same Stage 1 snapshot.
+| Tag | Commit | Adds |
+|---|---|---|
+| [`stage-1`](https://github.com/patisingh/SC2002-SCMC-Group7/tree/stage-1) | `ae473d6` | Regular customers, Waiter, Chef, Cashier, two tables, queue, victory and defeat |
+| [`stage-2`](https://github.com/patisingh/SC2002-SCMC-Group7/tree/stage-2) | `ab7dbff` | VIP customers (lose 5 per turn, 10% off) and Critic customers (lose 12, most expensive item, full price) |
+| [`stage-3`](https://github.com/patisingh/SC2002-SCMC-Group7/tree/stage-3) | `2f1ca2b` | Host, Salad + Burger Combo ($21.60, 2 prep units) and Happy Hour |
 
-## Stage 3 features and choices
+## Stage 1 to Stage 2
 
-- Host acts before Waiter and can seat one queued customer independently. A customer
-  seated by Host can order in the same turn; Waiter can still choose to seat instead.
-- The menu contains Salad, Burger, Pasta, and Salad + Burger Combo ($21.60, 2 units).
-  Regular/VIP selection still uses customer ID modulo menu size: C1 Burger,
-  C2 Pasta, C3 Combo, C5 Burger, C6 Pasta. Critic C4 chooses the most expensive
-  item, now the Combo. The manager never chooses food.
-- Happy Hour is offered at each turn start until activated. It lasts that turn and
-  the next. After arrivals and before staff choices, waiting customers recover 15
-  satisfaction, capped at 100. Normal waiting penalties still apply at turn end.
-- Orders placed during Happy Hour receive 20% off after any VIP discount.
-  Bills remain locked through expiry and payment; older orders keep their price.
-- Existing timing, six arrivals, two tables, 18 turns, and all victory targets stay
-  in force. Each active turn displays Happy Hour's remaining duration.
+Compare: https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-1...stage-2
 
-Stage 3 changes add `Host`, shared `SeatingStaff`, `ComboMeal`, and `HappyHour`.
-`Waiter` delegates seating to the shared base and applies the pricing policy at
-order creation. `Restaurant` owns Host and Happy Hour and handles recovery;
-`Customer` owns satisfaction changes. Controller changes only schedule the new
-start-of-turn policy and Host action. CLI changes display the policy and prompts.
-`Menu.standard()` remains unchanged; `Menu.stageThree()` registers the combo.
+| File | New / changed | Reason |
+|---|---|---|
+| `entity/VIPCustomer.java` | New | Overrides `waitingPenalty()` (5) and `billFor()` (10% off) |
+| `entity/CriticCustomer.java` | New | Overrides `waitingPenalty()` (12) and `chooseItem()` (most expensive item) |
+| `control/ArrivalSchedule.java` | Changed | New `createCustomer(id)` makes C2 a VIP and C4 a Critic |
+| `entity/Money.java` | Changed | New `percentOf()` for the VIP discount, rounded to the cent |
+| `boundary/GameCLI.java` | Changed | Welcome text explains the new customer types |
+| `tests/stage2/`, `docs/` | New / changed | Stage 2 test runs, decisions and test notes |
 
-Verify all Stage 3 rules and CLI replays offline (Python 3 plus JDK 17+):
+No files deleted. `Customer`, `Restaurant` and `GameController` were not changed: the new types work through
+polymorphism, so the Regular customer rules are exactly as in Stage 1.
 
-```sh
-python3 tests/stage3/verify.py
-```
+## Stage 2 to Stage 3
 
 Compare: https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-2...stage-3
 
-## Stage 1 to Stage 2 changes
+| File | New / changed | Reason |
+|---|---|---|
+| `entity/SeatingStaff.java` | New | Shared seating rule for the Host and Waiter |
+| `entity/Host.java` | New | Seats one queued customer per turn, before the Waiter |
+| `entity/HappyHour.java` | New | One activation per game, two turns, discounted bill |
+| `entity/ComboMeal.java` | New | Implements `MenuItem`; two items at 90% of their total price |
+| `entity/Waiter.java` | Changed | Extends `SeatingStaff`; applies Happy Hour pricing when taking an order |
+| `entity/Restaurant.java` | Changed | Owns the Host and Happy Hour; applies Happy Hour recovery |
+| `entity/Customer.java` | Changed | New `recoverWaitingSatisfaction()`, capped at 100 |
+| `entity/Menu.java` | Changed | New `stageThree()` adds the combo |
+| `control/GameController.java` | Changed | Asks about Happy Hour and the Host each turn |
+| `boundary/GameCLI.java` | Changed | Shows Happy Hour status and the new prompts |
+| `tests/stage3/`, `docs/` | New / changed | Stage 3 test runs, 27 rule checks (`Stage3RulesTest`), decisions and test notes |
 
-| File | Change and reason |
-|---|---|
-| `src/restaurant/entity/VIPCustomer.java` | New subclass: penalty of 5 and 10% discount through overrides. |
-| `src/restaurant/entity/CriticCustomer.java` | New subclass: penalty of 12 and highest-price food preference through overrides. |
-| `src/restaurant/control/ArrivalSchedule.java` | Creates VIP C2 and Critic C4; keeps all six arrival turns. |
-| `src/restaurant/entity/Money.java` | Adds percentage calculation rounded to the nearest cent. |
-| `src/restaurant/boundary/GameCLI.java` | Changes the title and explains the customer types. |
-| `README.md` | Adds Stage 2 setup, test and transition information. |
-| `docs/decisions.md` | Records customer assignments, Critic preference and discount rounding. |
-| `docs/test-notes.md` | Adds reproducible Stage 2 victory, defeat and invalid-input evidence. |
-| `tests/stage2/*.txt` | New input replays for Stage 2. |
+No files deleted. VIP, Critic and Regular rules are unchanged, which `Stage3RulesTest` checks.
 
-No files were deleted. `GameController`, `Customer`, `Restaurant`, `Waiter`, `Chef`, `Cashier`,
-`Order`, `MenuItem` and the other existing domain classes are unchanged. In particular,
-`MenuItem` remains an interface and `ActionResult` remains a record.
-The existing Waiter calls `chooseItem()` and `billFor()` through `Customer`, and waiting loss
-calls the overridden `waitingPenalty()`. No customer-type checks were added to the turn loop.
+## Video
 
-After the lowercase tags are created and pushed, the transition comparison will be:
-https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-1...stage-2
-
-## Code layout
-
-    src/restaurant/
-      Main.java                    starts the game
-      boundary/GameCLI.java        screen and keyboard only, no game rules
-      control/GameController.java  the six steps of every turn, and the win check
-      control/ArrivalSchedule.java who arrives on which turn
-      entity/                      Restaurant, Table, Customer, RegularCustomer, VIPCustomer, CriticCustomer,
-                                   Order, Menu, MenuItem, ComboMeal, HappyHour,
-                                   Dish, Staff, SeatingStaff, Host, Waiter, Chef, Cashier, ActionResult, Money,
-                                   CustomerStatus, OrderStatus
-
-Our own rule choices are listed in `docs/decisions.md`.
-
-## Video timestamps
 
 | # | Segment | Time |
 |---|---------|------|
