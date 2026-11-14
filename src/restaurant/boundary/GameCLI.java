@@ -2,46 +2,35 @@ package restaurant.boundary;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalDouble;
 import java.util.Scanner;
 import restaurant.control.GameController;
 import restaurant.entity.Customer;
 import restaurant.entity.Money;
-import restaurant.entity.Order;
 import restaurant.entity.Restaurant;
 import restaurant.entity.Table;
 
-public class GameCLI {
+/** Text version of the game: prints to the console and reads typed numbers. */
+public class GameCLI implements GameView {
     private static final int WIDTH = 62;   
     private static final String HEAVY = "=".repeat(WIDTH);
-    private static final String TABLE_LINE = "  +-------+------------+----------------+------------------------+";
+    private static final String TABLE_LINE = "  +-------+------------+----------------+-------------------------------------+";
 
     private final Scanner in = new Scanner(System.in);
     private final boolean echo = Boolean.getBoolean("echo");  
 
+    @Override
     public void showWelcome(int maxTurns) {
         System.out.println(HEAVY);
         System.out.println(center("RESTAURANT RUSH  -  Stage 3"));
         System.out.println(HEAVY);
-        System.out.println("  You are the manager. Each turn you tell the Waiter");
-        System.out.println("  Host and the Chef what to do. The Cashier works by itself.");
-        System.out.println();
-        System.out.println("  " + maxTurns + " turns | " + GameController.TABLES + " tables | 1 Host | 1 Waiter | 1 Chef | 1 Cashier");
-        System.out.println("  Regular: loses 8 satisfaction per waiting turn.");
-        System.out.println("  VIP: loses 5 per waiting turn and gets 10% off.");
-        System.out.println("  Critic: loses 12 per waiting turn, pays full price,");
-        System.out.println("  and orders the most expensive menu item.");
-        System.out.println("  Host seats before the Waiter; each gets one task.");
-        System.out.println("  Salad + Burger Combo: $21.60, 2 prep units.");
-        System.out.println("  Happy Hour: activate once for 2 turns; waiting customers");
-        System.out.println("  recover 15 at turn start; new orders get 20% off after VIP.");
-        System.out.println("  To win, by the end of turn " + maxTurns + " you need:");
-        System.out.println("    - at least " + GameController.TARGET_PAID + " paid customers");
-        System.out.println("    - revenue of at least " + Money.format(GameController.TARGET_REVENUE_CENTS));
-        System.out.println("    - average satisfaction of at least " + (int) GameController.TARGET_AVG_SATISFACTION);
+        for (String line : DisplayText.welcomeLines(maxTurns)) {
+            if (line.isEmpty()) System.out.println();
+            else System.out.println("  " + line);
+        }
         System.out.println(HEAVY);
     }
 
+    @Override
     public void showTurnHeader(int turn, int maxTurns) {
         System.out.println();
         System.out.println();
@@ -50,13 +39,12 @@ public class GameCLI {
         System.out.println(HEAVY);
     }
 
+    @Override
     public void showState(Restaurant r) {
-        System.out.println("  Happy Hour: " + (r.getHappyHour().isActive()
-                ? r.getHappyHour().getRemainingTurns() + " turn(s) remaining (including this turn)"
-                : r.getHappyHour().canActivate() ? "available" : "used / expired"));
+        System.out.println("  Happy Hour: " + DisplayText.happyHourStatus(r.getHappyHour()));
         System.out.println("  Revenue " + Money.format(r.getRevenueCents())
                 + " | Paid " + r.paidCount()
-                + " | Avg satisfaction " + formatAverage(r.averageSatisfaction())
+                + " | Avg satisfaction " + DisplayText.formatAverage(r.averageSatisfaction())
                 + " | Left " + r.getDepartures());
 
         System.out.println();
@@ -65,39 +53,42 @@ public class GameCLI {
             System.out.println("    nobody");
         }
         for (Customer c : r.getQueue()) {
-            System.out.println("    " + pad(shortName(c), 12) + satisfactionBar(c.getSatisfaction()));
+            System.out.println("    " + pad(DisplayText.shortName(c), 12) + satisfactionBar(c.getSatisfaction()));
         }
 
         System.out.println();
         System.out.println(TABLE_LINE);
-        System.out.println("  | TABLE | CUSTOMER   | SATISFACTION   | WHAT'S HAPPENING       |");
+        System.out.println("  | TABLE | CUSTOMER   | SATISFACTION   | WHAT'S HAPPENING                    |");
         System.out.println(TABLE_LINE);
         for (Table t : r.getTables()) {
             Customer c = t.getCustomer();
-            String name = c == null ? "-" : shortName(c);
+            String name = c == null ? "-" : DisplayText.shortName(c);
             String bar = c == null ? "" : satisfactionBar(c.getSatisfaction());
-            String activity = c == null ? "Free" : describe(c);
+            String activity = c == null ? "Free" : DisplayText.describe(c);
             System.out.println("  | " + pad(String.valueOf(t.getNumber()), 5) + " | " + pad(name, 10)
-                    + " | " + pad(bar, 14) + " | " + pad(activity, 22) + " |");
+                    + " | " + pad(bar, 14) + " | " + pad(activity, 35) + " |");
         }
         System.out.println(TABLE_LINE);
     }
 
+    @Override
     public void showSection(String title) {
         System.out.println();
         String text = "-- " + title + " ";
         System.out.println("  " + text + "-".repeat(Math.max(3, WIDTH - 2 - text.length())));
     }
 
+    @Override
     public void showTurnSummary(Restaurant r, int turn, int maxTurns) {
         System.out.println();
         System.out.println("  Served " + r.getServedCount()
                 + " | Left " + r.getDepartures()
                 + " | Revenue " + Money.format(r.getRevenueCents())
-                + " | Avg " + formatAverage(r.averageSatisfaction())
+                + " | Avg " + DisplayText.formatAverage(r.averageSatisfaction())
                 + " | Turn " + turn + "/" + maxTurns);
     }
 
+    @Override
     public void showResult(Restaurant r, boolean victory, boolean paidMet, boolean revenueMet, boolean satisfactionMet) {
         System.out.println();
         System.out.println();
@@ -110,20 +101,23 @@ public class GameCLI {
         printTarget("Revenue >= " + Money.format(GameController.TARGET_REVENUE_CENTS),
                 Money.format(r.getRevenueCents()), revenueMet);
         printTarget("Avg satisfaction >= " + (int) GameController.TARGET_AVG_SATISFACTION,
-                formatAverage(r.averageSatisfaction()), satisfactionMet);
+                DisplayText.formatAverage(r.averageSatisfaction()), satisfactionMet);
         System.out.println();
         System.out.println("  Customers who left unhappy: " + r.getDepartures());
         System.out.println(HEAVY);
     }
 
+    @Override
     public void showMessage(String text) {
         printWrapped("  > ", text);
     }
 
+    @Override
     public void showError(String text) {
         printWrapped("  ! ", text);
     }
 
+    @Override
     public int askChoice(String title, List<String> options, String zeroLabel) {
         System.out.println();
         System.out.println("  " + title);
@@ -134,6 +128,7 @@ public class GameCLI {
         return readNumber(0, options.size());
     }
 
+    @Override
     public int askPick(String title, List<String> labels) {
         System.out.println("  " + title);
         for (int i = 0; i < labels.size(); i++) {
@@ -167,30 +162,9 @@ public class GameCLI {
         System.out.println("  " + pad(target, 25) + pad(achieved, 12) + (met ? "MET" : "MISSED"));
     }
 
-    private String shortName(Customer c) {
-        return "C" + c.getId() + " " + c.getTypeName();
-    }
-
-    private String describe(Customer c) {
-        Order o = c.getOrder();
-        return switch (c.getStatus()) {
-            case SEATED -> "Waiting to order";
-            case ORDERED -> o.isReady()
-                    ? o.getItem().getName() + " READY to serve"
-                    : o.getItem().getName() + " cooking " + o.getProgress();
-            case EATING -> "Eating " + o.getItem().getName();
-            case READY_TO_PAY -> "Done, ready to pay";
-            default -> c.getStatus().toString();
-        };
-    }
-
     private String satisfactionBar(int satisfaction) {
         int filled = (int) Math.round(satisfaction / 10.0);
         return "#".repeat(filled) + "-".repeat(10 - filled) + String.format(" %3d", satisfaction);
-    }
-
-    private String formatAverage(OptionalDouble avg) {
-        return avg.isPresent() ? String.format("%.1f", avg.getAsDouble()) : "N/A";
     }
 
     private void printWrapped(String prefix, String text) {

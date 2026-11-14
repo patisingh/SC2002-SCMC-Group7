@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-import restaurant.boundary.GameCLI;
+import restaurant.boundary.GameView;
 import restaurant.entity.ActionResult;
 import restaurant.entity.Chef;
 import restaurant.entity.Customer;
@@ -22,43 +22,43 @@ public class GameController {
     public static final int TARGET_REVENUE_CENTS = 4500;
     public static final double TARGET_AVG_SATISFACTION = 60.0;
 
-    private final GameCLI cli;
+    private final GameView view;
     private final Restaurant restaurant = new Restaurant(Menu.stageThree(), TABLES);
     private final ArrivalSchedule schedule = new ArrivalSchedule();
     private int turn;
 
-    public GameController(GameCLI cli) {
-        this.cli = cli;
+    public GameController(GameView view) {
+        this.view = view;
     }
 
     public void play() {
-        cli.showWelcome(MAX_TURNS);
+        view.showWelcome(MAX_TURNS);
         for (turn = 1; turn <= MAX_TURNS; turn++) {
             runTurn();
         }
         boolean paidMet = restaurant.paidCount() >= TARGET_PAID;
         boolean revenueMet = restaurant.getRevenueCents() >= TARGET_REVENUE_CENTS;
         boolean satisfactionMet = restaurant.averageSatisfaction().orElse(0) >= TARGET_AVG_SATISFACTION;
-        cli.showResult(restaurant, paidMet && revenueMet && satisfactionMet, paidMet, revenueMet, satisfactionMet);
+        view.showResult(restaurant, paidMet && revenueMet && satisfactionMet, paidMet, revenueMet, satisfactionMet);
     }
 
     private void runTurn() {
         restaurant.startTurn();
-        cli.showTurnHeader(turn, MAX_TURNS);
+        view.showTurnHeader(turn, MAX_TURNS);
         processArrivals();
         askHappyHour();
         restaurant.applyHappyHourRecovery();
-        cli.showState(restaurant);
+        view.showState(restaurant);
 
-        cli.showSection("Your decisions");
+        view.showSection("Your decisions");
         askHost();
         askWaiter();                   
         askChef();
 
-        cli.showSection("End of turn " + turn);
+        view.showSection("End of turn " + turn);
         processEatingAndPayment();     
         applyWaiting();               
-        cli.showTurnSummary(restaurant, turn, MAX_TURNS);
+        view.showTurnSummary(restaurant, turn, MAX_TURNS);
         restaurant.getHappyHour().endTurn();
     }
 
@@ -66,24 +66,24 @@ public class GameController {
         Customer c = schedule.customerArriving(turn);
         if (c != null) {
             restaurant.addToQueue(c);
-            cli.showMessage(c.getLabel() + " arrives and joins the queue.");
+            view.showMessage(c.getLabel() + " arrives and joins the queue.");
         }
     }
 
 
     private void askHappyHour() {
         if (restaurant.getHappyHour().canActivate()
-                && cli.askChoice("HAPPY HOUR - start-of-turn policy:",
+                && view.askChoice("HAPPY HOUR - start-of-turn policy:",
                         List.of("Activate for this turn and the next"), "Keep for later") == 1) {
-            cli.showMessage(restaurant.getHappyHour().activate().message());
+            view.showMessage(restaurant.getHappyHour().activate().message());
         }
     }
 
     private void askHost() {
         Host host = restaurant.getHost();
         while (true) {
-            if (cli.askChoice("HOST - choose one task:", List.of("Seat a queued customer"), "Wait") == 0) {
-                cli.showMessage("The Host waits this turn.");
+            if (view.askChoice("HOST - choose one task:", List.of("Seat a queued customer"), "Wait") == 0) {
+                view.showMessage("The Host waits this turn.");
                 return;
             }
             if (report(host.seat(restaurant,
@@ -104,9 +104,9 @@ public class GameController {
                 "Serve a READY order              [" + ready.size() + " READY]");
 
         while (true) {
-            int choice = cli.askChoice("WAITER - choose one task:", tasks, "Wait");
+            int choice = view.askChoice("WAITER - choose one task:", tasks, "Wait");
             if (choice == 0) {
-                cli.showMessage("The Waiter waits this turn.");
+                view.showMessage("The Waiter waits this turn.");
                 return;
             }
             ActionResult result = switch (choice) {
@@ -124,14 +124,14 @@ public class GameController {
     private void askChef() {
         List<Order> cookable = restaurant.getCookableOrders();
         if (cookable.isEmpty()) {
-            cli.showMessage("Chef: no orders to cook, so the Chef waits this turn.");
+            view.showMessage("Chef: no orders to cook, so the Chef waits this turn.");
             return;
         }
         Chef chef = restaurant.getChef();
         List<String> tasks = List.of("Cook one unit of an order        [" + cookable.size() + " to cook]");
 
-        if (cli.askChoice("CHEF - choose one task:", tasks, "Wait") == 0) {
-            cli.showMessage("The Chef waits this turn.");
+        if (view.askChoice("CHEF - choose one task:", tasks, "Wait") == 0) {
+            view.showMessage("The Chef waits this turn.");
         } else {
             report(chef.prepare(pick("Cook which order?", cookable, this::orderLine)), chef);
         }
@@ -139,10 +139,10 @@ public class GameController {
 
     private boolean report(ActionResult result, Staff staff) {
         if (result.success()) {
-            cli.showMessage(result.message());
+            view.showMessage(result.message());
             return true;
         }
-        cli.showError(result.message() + " Choose again; the " + staff.getRole() + "'s task has not been used.");
+        view.showError(result.message() + " Choose again; the " + staff.getRole() + "'s task has not been used.");
         return false;
     }
 
@@ -153,7 +153,7 @@ public class GameController {
         for (T option : options) {
             labels.add(describe.apply(option));
         }
-        return options.get(cli.askPick(prompt, labels));
+        return options.get(view.askPick(prompt, labels));
     }
 
     private String customerLine(Customer c) {
@@ -168,16 +168,16 @@ public class GameController {
     private void processEatingAndPayment() {
         ActionResult payment = restaurant.getCashier().collectPayment(restaurant);
         if (payment.success()) {
-            cli.showMessage(payment.message());
+            view.showMessage(payment.message());
         }
         for (Customer c : restaurant.finishEating(turn)) {
-            cli.showMessage(c.getLabel() + " finishes eating and is READY_TO_PAY (pays next turn at the earliest).");
+            view.showMessage(c.getLabel() + " finishes eating and is READY_TO_PAY (pays next turn at the earliest).");
         }
     }
 
     private void applyWaiting() {
         for (Customer c : restaurant.applyWaiting()) {
-            cli.showMessage(c.getLabel() + " reached 0 satisfaction and LEFT without paying.");
+            view.showMessage(c.getLabel() + " reached 0 satisfaction and LEFT without paying.");
         }
     }
 }
