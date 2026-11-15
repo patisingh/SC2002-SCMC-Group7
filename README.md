@@ -81,7 +81,7 @@ To run the GUI, execute src/restaurant/MainGUI.java as a Java Application in Ecl
 Generative AI was used to assist in building the optional Java Swing GUI for Restaurant Rush. This was done after Stage 3 to improve the visual presentation of the game while preserving its existing functionality. The team used a single shared AI chat for the GUI. No AI assistance was used for the Stage 1–3 game code.
 
 
-GUI AI history (Abhi): included in the zip submission (Team_GUI_AI_History.pdf)
+GUI AI history: included in the zip submission (Team_GUI_AI_History.pdf)
 
 ## Video
 
