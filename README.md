@@ -205,15 +205,15 @@ GUI AI history: included in the zip submission (Team_GUI_AI_History.pdf)
 
 | # | Segment | Time |
 |---|---|---|
-| – | Game overview and the three stages | 00:00 |
-| 1 | The game launching from the submitted project | 01:40 |
-| 2 | Meaningful manager choices, including a decision where staff are constrained | 01:48 |
-| 3 | A dish going READY → SERVED → payment | 02:06 |
-| 4 | VIP behaviour (02:15) and Critic behaviour (03:29) | 02:15 |
-| 5 | Stage 3 features: Happy Hour (02:24) and the combo (03:03) | 02:24 |
-| 6 | One victory (04:06) and one defeat (04:54) | 04:06 |
-| 7 | Class diagrams (05:07) and stage tag comparisons (07:05) | 05:07 |
-| – | Optional GUI and the shared GameView interface | 09:49 |
-| – | Stage 3 rule checks and victory replay | 10:19 |
-| – | Selected use case and sequence diagram | 10:37 |
-| – | Individual contributions and key learning | 13:11 |
+| 1 | Game overview and the three stages | 00:00 |
+| 2 | The game launching from the submitted project | 01:40 |
+| 3 | Meaningful manager choices, including a decision where staff are constrained | 01:48 |
+| 4 | A dish going READY → SERVED → payment | 02:06 |
+| 5 | VIP behaviour (02:15) and Critic behaviour (03:29) | 02:15 |
+| 6 | Stage 3 features: Happy Hour (02:24) and the combo (03:03) | 02:24 |
+| 7 | One victory (04:06) and one defeat (04:54) | 04:06 |
+| 8 | Class diagrams (05:07) and stage tag comparisons (07:05) | 05:07 |
+| 9 | Optional GUI and the shared GameView interface | 09:49 |
+| 10 | Stage 3 rule checks and victory replay | 10:19 |
+| 11 | Selected use case and sequence diagram | 10:37 |
+| 12 | Individual contributions and key learning | 13:11 |
