@@ -1,7 +1,9 @@
 # Restaurant Rush
 
-SC2002 Group 7: Hari, Sachin, Abhi, Dylan, Yukesh
-Repository: https://github.com/patisingh/SC2002-SCMC-Group7
+**SC2002 Group 7:** Hari, Sachin, Abhi, Dylan, Yukesh
+
+[How to run](#how-to-run) · [How to play](#how-to-play) · [Project structure](#project-structure) ·
+[Tests](#tests) · [Stage snapshots](#stage-snapshots) · [AI History](#ai-history) · [Video](#video)
 
 A turn-based restaurant game built in Java for SC2002. You are the manager and choose what the staff do
 each turn. Win by the end of turn 18 with at least 4 paid customers, $45 revenue and average satisfaction
@@ -12,11 +14,17 @@ Host, combo meal and Happy Hour. The original versions are kept under the stage 
 
 ## How to run
 
-JDK 17 or newer. No external Java libraries or build tools are needed. In Eclipse, run
-src/restaurant/Main.java as a Java Application. From a terminal, in the repository root:
+JDK 17 or newer. No external Java libraries or build tools are needed. Run the commands below from the
+repository root.
 
-    javac -d out $(find src -name "*.java")
-    java -cp out restaurant.Main
+### Command line
+
+On macOS or Linux:
+
+```sh
+javac -d out $(find src -name "*.java")
+java -cp out restaurant.Main
+```
 
 On Windows PowerShell, compile and run with:
 
@@ -26,22 +34,17 @@ javac -d out $sources
 java -cp out restaurant.Main
 ```
 
-Replay a test run (the same inputs always give the same result):
+In Eclipse, run `src/restaurant/Main.java` as a Java Application.
 
-    java -Decho=true -cp out restaurant.Main < tests/stage3/tc07_stage3_victory.txt
+### Swing GUI
 
-Each stage's test files replay at that stage's tag. Expected results are in docs/test-notes.md, and our
-rule choices are in docs/decisions.md.
+The optional GUI uses the same game logic as the command-line version. After compiling, start it with:
 
-## Running the GUI
+```sh
+java -cp out restaurant.MainGUI
+```
 
-An optional Java Swing GUI is also available.
-In Eclipse, run src/restaurant/MainGUI.java as a Java Application.
-The GUI uses the same game logic as the command-line version.
-
-After compiling, it can also be started from a terminal:
-
-    java -cp out restaurant.MainGUI
+In Eclipse, run `src/restaurant/MainGUI.java` as a Java Application.
 
 Click the action buttons or press their number keys. The window shows the restaurant, queue, tables,
 order progress, Happy Hour status and game log. At the end, use **Play again** to start a new game.
@@ -50,6 +53,11 @@ order progress, Happy Hour status and game log. At the end, use **Play again** t
 
 There are two tables and six customers, arriving on turns 1, 4, 7, 10, 13 and 16. Each staff member can
 do one task per turn, so deciding what to leave until the next turn is part of the game.
+
+All three targets must be met at the end of turn 18: **4 or more paid customers**, **at least $45 revenue**
+and **average paid-customer satisfaction of at least 60**.
+
+### Staff and turn order
 
 | Staff | Task |
 |---|---|
@@ -62,6 +70,8 @@ The Host can seat a customer and the Waiter can take that customer's order in th
 acts after the Waiter, so a dish finished this turn can only be served from the next turn. Customers
 finish eating at the end of the turn after they are served; payment can happen from the following turn.
 A table becomes free when its customer pays or leaves.
+
+### Customers and satisfaction
 
 Customers start with 100 satisfaction. While queued, waiting to order or waiting for food, they lose
 satisfaction at the end of each turn. At 0 they leave without paying. Satisfaction stops dropping once
@@ -76,6 +86,8 @@ food is served. Only customers who have paid count towards revenue and average s
 C2 is the VIP and C4 is the Critic; the other four are Regular. Food choices and arrivals are fixed,
 so the same decisions give the same result. Invalid inputs and rejected actions do not use a staff task.
 
+### Menu and Happy Hour
+
 | Menu item | Price | Preparation units |
 |---|---|---|
 | Salad | $9.00 | 1 |
@@ -87,9 +99,6 @@ Happy Hour can be activated once, at the start of a turn. It lasts for that turn
 customers recover 15 satisfaction at turn start, capped at 100, and orders taken while it is active get
 20% off after any VIP discount. The bill is fixed when the order is taken. For example, VIP Pasta costs
 $18.00 → $16.20 → $12.96 during Happy Hour, even if the customer pays after it ends.
-
-All three targets must be met at the end of turn 18: 4 or more paid customers, at least $45 revenue and
-average paid-customer satisfaction of at least 60.
 
 ## Project structure
 
@@ -111,9 +120,11 @@ Host and Waiter reuse the seating checks in SeatingStaff.
 
 ## Tests
 
-With Python 3 and JDK 17 or newer installed, run this from the repository root:
+With Python 3 and JDK 17 or newer installed, run:
 
-    python3 tests/stage3/verify.py
+```sh
+python3 tests/stage3/verify.py
+```
 
 The script compiles the source with `--release 17`, runs 27 rule checks and replays the three Stage 3
 input files. It uses only the Python standard library.
@@ -124,8 +135,15 @@ input files. It uses only the Python standard library.
 | tc08_stage3_defeat.txt | All staff wait, no Happy Hour; 0 paid, $0.00 revenue, 2 departures; DEFEAT |
 | tc09_stage3_invalid_input.txt | Rejects invalid choices without spending tasks, then reaches the same result as TC-07 |
 
+To replay a single test after compiling (macOS, Linux or Windows Command Prompt):
+
+```sh
+java -Decho=true -cp out restaurant.Main < tests/stage3/tc07_stage3_victory.txt
+```
+
 Stage 1 and Stage 2 replays need their matching stage tags, since the prompts and rules change between
-stages. Full results and action plans are in [docs/test-notes.md](docs/test-notes.md).
+stages. Full results and action plans are in [docs/test-notes.md](docs/test-notes.md); rule choices are in
+[docs/decisions.md](docs/decisions.md).
 
 ## Stage snapshots
 
@@ -135,9 +153,9 @@ stages. Full results and action plans are in [docs/test-notes.md](docs/test-note
 | [`stage-2`](https://github.com/patisingh/SC2002-SCMC-Group7/tree/stage-2) | ab7dbff | VIP customers (lose 5 per turn, 10% off) and Critic customers (lose 12, most expensive item, full price) |
 | [`stage-3`](https://github.com/patisingh/SC2002-SCMC-Group7/tree/stage-3) | 2f1ca2b | Host, Salad + Burger Combo ($21.60, 2 prep units) and Happy Hour |
 
-## Stage 1 to Stage 2
+### Stage 1 to Stage 2
 
-Compare: https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-1...stage-2
+[Compare stage-1 → stage-2](https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-1...stage-2)
 
 | File | New / changed | Reason |
 |---|---|---|
@@ -151,9 +169,9 @@ Compare: https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-1...stage
 No files deleted. Customer, Restaurant and GameController were not changed: the new types work through
 polymorphism, so the Regular customer rules are exactly as in Stage 1.
 
-## Stage 2 to Stage 3
+### Stage 2 to Stage 3
 
-Compare: https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-2...stage-3
+[Compare stage-2 → stage-3](https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-2...stage-3)
 
 | File | New / changed | Reason |
 |---|---|---|
@@ -171,22 +189,19 @@ Compare: https://github.com/patisingh/SC2002-SCMC-Group7/compare/stage-2...stage
 
 No files deleted. VIP, Critic and Regular rules are unchanged, which Stage3RulesTest checks.
 
-## After Stage 3: Optional GUI
+### After Stage 3: Optional GUI
 
-After completing Stage 3, we added an optional graphical user interface using Java Swing to improve the visual presentation of Restaurant Rush.
-The GUI shares the existing game logic through the GameView interface, allowing both the CLI and GUI versions to use the same GameController without changing the original game rules.
-To run the GUI, execute src/restaurant/MainGUI.java as a Java Application in Eclipse.
+After Stage 3, we added the Swing GUI and animated restaurant scene. Both views use the same
+`GameController` through `GameView`, so the GUI keeps the existing game rules.
 
 ## AI History
 
-Generative AI was used to assist in building the optional Java Swing GUI for Restaurant Rush. This was done after Stage 3 to improve the visual presentation of the game while preserving its existing functionality. The team used a single shared AI chat for the GUI. No AI assistance was used for the Stage 1–3 game code.
-
+Generative AI was used to assist in building the optional Java Swing GUI after Stage 3. The team used
+a single shared AI chat for the GUI. No AI assistance was used for the Stage 1–3 game code.
 
 GUI AI history (Abhi): included in the zip submission (Team_GUI_AI_History.pdf)
 
 ## Video
-
-Timestamps refer to the submitted recording, `IMG_3746.MP4`.
 
 | # | Segment | Time |
 |---|---|---|
@@ -202,12 +217,3 @@ Timestamps refer to the submitted recording, `IMG_3746.MP4`.
 | – | Stage 3 rule checks and victory replay | 10:04 |
 | – | Selected use case and sequence diagram | 10:22 |
 | – | Individual contributions and key learning | 12:56 |
-
-In the gameplay demo, serving before an order is READY is rejected at 01:57 without using the Waiter's
-task. C1's Burger becomes READY at 02:06, is served at 02:12, and the payment is shown at 02:46. The VIP's
-Pasta bill is $12.96 after the VIP and Happy Hour discounts; the combo costs $21.60 and needs two prep units.
-
-The victory finishes with 5 paid customers, $86.16 revenue and 87.8 average satisfaction. The defeat
-finishes with no payments and 2 customers leaving unhappy. The selected use case starts at 10:22, with
-the sequence diagram from 10:48: C4 orders the combo during Happy Hour for $17.28. This is a separate
-scenario from the gameplay demo, where Happy Hour is used earlier for the VIP. Key learning starts at 13:32.
