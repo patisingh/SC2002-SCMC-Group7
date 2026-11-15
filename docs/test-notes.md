@@ -2,7 +2,7 @@
 
 How to replay: `java -Decho=true -cp out restaurant.Main < tests/stage1/tc01_victory.txt`
 
-## Stage 1 (run on the preserved Stage 1 version; existing tag `Stage-1`)
+## Stage 1 (run on the preserved Stage 1 version; existing tag `stage-1`)
 
 | ID | File | What it checks | Expected result |
 |---|---|---|---|
