@@ -213,7 +213,7 @@ GUI AI history: included in the zip submission (Team_GUI_AI_History.pdf)
 | 5 | Stage 3 features: Happy Hour (02:24) and the combo (03:03) | 02:24 |
 | 6 | One victory (04:06) and one defeat (04:54) | 04:06 |
 | 7 | Class diagrams (05:07) and stage tag comparisons (07:05) | 05:07 |
-| – | Optional GUI and the shared GameView interface | 09:38 |
-| – | Stage 3 rule checks and victory replay | 10:04 |
-| – | Selected use case and sequence diagram | 10:22 |
-| – | Individual contributions and key learning | 12:56 |
+| – | Optional GUI and the shared GameView interface | 09:49 |
+| – | Stage 3 rule checks and victory replay | 10:19 |
+| – | Selected use case and sequence diagram | 10:37 |
+| – | Individual contributions and key learning | 13:11 |
